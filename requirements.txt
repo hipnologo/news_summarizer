@@ -1,0 +1,7 @@
+streamlit
+requests
+textblob
+transformers
+nltk
+openai
+
