@@ -1,12 +1,18 @@
-# News Sentiment Analysis
+# News Summarizer
 
-This Streamlit app performs sentiment analysis on news content using three different methods: NLTK's VADER, TextBlob, and BERT from the transformers library.
+This app providers a summary of news along with sentiment analysis on news content using three different methods: NLTK's VADER, TextBlob, and BERT from the transformers library. The news headlines are gathered via various methods offered through the app, then an OpenAI Assistant is called via API to perform the summarization.
+
+[![License: Apache License 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Forks](https://img.shields.io/github/forks/hipnologo/news_summarizer)](https://github.com/hipnologo/news_summarizer/network/members)
+[![Stars](https://img.shields.io/github/stars/hipnologo/news_summarizer)](https://github.com/hipnologo/news_summarizer/stargazers)
+[![Issues](https://img.shields.io/github/issues/hipnologo/news_summarizer)](https://github.com/hipnologo/news_summarizer/issues)
+[![GitHub contributors](https://img.shields.io/github/contributors/hipnologo/news_summarizer)](https://github.com/hipnologo/news_summarizer/graphs/contributors)
 
 ## Features
 
-- Fetch news articles from GNews and Yahoo Finance.
+- Fetch news articles from GNews API and Yahoo Finance.
 - Upload text files for sentiment analysis.
-- Paste text directly into the app for analysis.
+- Paste text directly into the app for summarization and analysis.
 - Perform sentiment analysis using NLTK, TextBlob, or BERT.
 - Interact with OpenAI's GPT model to create content based on the news.
 
@@ -44,3 +50,20 @@ Ensure these are set in your environment or use the Streamlit interface to input
 - Yahoo Finance News: Get the latest news from Yahoo Finance.
 - Sentiment Analysis Options
 - Choose between NLTK, TextBlob, and BERT for sentiment analysis.
+
+## Contributing
+Contributions are welcome! To contribute to News Summarizer, please follow these guidelines:
+
+* Fork the repository.
+* Create a new branch for your changes.
+* Make your changes and write tests for them.
+* Run the tests using pytest to make sure they pass.
+* Submit a pull request.
+
+
+## Support
+If you have any questions or need help using News Summarizer, please post a question or [open an issue](https://github.com/hipnologo/news_summarizer/issues) on GitHub.
+
+
+## License
+This project is licensed under the Apache 2.0 License - see the [LICENSE](https://opensource.org/licenses/Apache-2.0) file for details.
