@@ -14,13 +14,19 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 
 # Set your Assistant ID and instantiate the OpenAI client.
 ASSISTANT_ID = "asst_Of2rJSAhLl8qNRc2m9Y9VuMj"
+
+if "OPENAI_API_KEY" in os.environ:
+    api_key = os.environ["OPENAI_API_KEY"]
+else:
+    api_key = st.text_input("Enter OpenAI API Key:", help="OpenAI API key not found in environment variables.")
+    
 client = OpenAI()
 
 # Download VADER lexicon
 nltk.download('vader_lexicon')
 
 # Initialize the classifier globally if you are going to use Streamlit to prevent reloading for each call
-classifier = pipeline('sentiment-analysis')
+classifier = pipeline('sentiment-analysis', model="ProsusAI/finbert")
 
 # Function to analyze sentiment using NLTK's VADER
 def analyze_sentiment_nltk(text):
