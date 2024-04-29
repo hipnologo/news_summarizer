@@ -19,8 +19,11 @@ if "OPENAI_API_KEY" in os.environ:
     api_key = os.environ["OPENAI_API_KEY"]
 else:
     api_key = st.text_input("Enter OpenAI API Key:", help="OpenAI API key not found in environment variables.")
-    
-client = OpenAI()
+
+if api_key:
+    client = OpenAI(api_key)
+else:
+    st.error("OpenAI API key is required to initialize the client.")
 
 # Download VADER lexicon
 nltk.download('vader_lexicon')
