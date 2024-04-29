@@ -4,4 +4,4 @@ textblob
 transformers
 nltk
 openai
-
+beautifulsoup4
