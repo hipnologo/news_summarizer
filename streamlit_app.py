@@ -15,15 +15,10 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 # Set your Assistant ID and instantiate the OpenAI client.
 ASSISTANT_ID = "asst_Of2rJSAhLl8qNRc2m9Y9VuMj"
 
-if "OPENAI_API_KEY" in os.environ:
-    api_key = os.environ["OPENAI_API_KEY"]
-else:
-    api_key = st.text_input("Enter OpenAI API Key:", help="OpenAI API key not found in environment variables.")
-
-if api_key:
-    client = OpenAI(api_key)
-else:
-    st.error("OpenAI API key is required to initialize the client.")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    OPENAI_API_KEY = st.text_input("Please enter your OpenAI API key: ")
+client = OpenAI()
 
 # Download VADER lexicon
 nltk.download('vader_lexicon')
@@ -87,7 +82,7 @@ st.set_page_config(layout='wide')
 
 st.sidebar.text("Disclaimer: Demo purposes only.")
 
-st.title("News Sentiment Analysis")
+st.title("News Summarizer & Sentiment Analysis")
 st.write("Results will appear here based on the input method selected in the sidebar.")
 
 # Sidebar for input options
