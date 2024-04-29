@@ -15,11 +15,6 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 # Set your Assistant ID and instantiate the OpenAI client.
 ASSISTANT_ID = "asst_Of2rJSAhLl8qNRc2m9Y9VuMj"
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    OPENAI_API_KEY = st.text_input("Please enter your OpenAI API key: ")
-client = OpenAI()
-
 # Download VADER lexicon
 nltk.download('vader_lexicon')
 
@@ -79,6 +74,11 @@ def create_openai_thread(content):
     
 # Main area for displaying results or additional features
 st.set_page_config(layout='wide')
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    OPENAI_API_KEY = st.sidebar.text_input("Please enter your OpenAI API key: ")
+client = OpenAI()
 
 st.sidebar.text("Disclaimer: Demo purposes only.")
 
