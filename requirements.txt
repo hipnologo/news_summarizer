@@ -6,3 +6,5 @@ nltk
 openai
 beautifulsoup4
 torch
+psrecord
+matplotlib

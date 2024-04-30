@@ -9,44 +9,53 @@ If not, see <https://opensource.org/license/apache-2-0>.
 
 import streamlit as st
 import requests
-import time
 from urllib.parse import quote
-from scraper import scrape_yahoo_finance # Own function
+from scraper import scrape_yahoo_finance  # Own function
 from openai import OpenAI
 import os
-# For sentiment analysis
-from textblob import TextBlob  
+import time
+from textblob import TextBlob
 from transformers import pipeline
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
 
+nltk.download('vader_lexicon')
+
 # Set your Assistant ID and instantiate the OpenAI client.
 ASSISTANT_ID = "asst_Of2rJSAhLl8qNRc2m9Y9VuMj"
 
-# Download VADER lexicon
-nltk.download('vader_lexicon')
+st.set_page_config(
+    page_title="News Summarizer & Sentiment Analysis",
+    page_icon="🗞️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+    # menu_items={
+    #     'Get Help': 'https://www.myapp.com/help',
+    #     'Report a bug': "https://www.myapp.com/bug",
+    #     'About': "# This is a header. This is an *extremely* cool app!"
+    # }
+)
 
-# Initialize the classifier globally if you are going to use Streamlit to prevent reloading for each call
-classifier = pipeline('sentiment-analysis', model="ProsusAI/finbert")
+# Using cache to load models
+@st.cache_resource
+def load_models():
+    # Load sentiment analysis models
+    classifier = pipeline('sentiment-analysis', model="ProsusAI/finbert")
+    sid = SentimentIntensityAnalyzer()
+    return classifier, sid
+
+classifier, sid = load_models()
 
 # Function to analyze sentiment using NLTK's VADER
 def analyze_sentiment_nltk(text):
-    sid = SentimentIntensityAnalyzer()
     scores = sid.polarity_scores(text)
     return scores
 
 # Function to analyze sentiment using BERT
 def analyze_sentiment_bert(text):
-    # Truncate the text to the maximum length of 512 tokens for BERT
     max_length = 512  # BERT's maximum token length
-    
-    # Tokenize the text and truncate if it's too long
     inputs = classifier.tokenizer.encode(text, add_special_tokens=True, truncation=True, max_length=max_length)
-    
-    # Convert tokens back to text
     truncated_text = classifier.tokenizer.decode(inputs, skip_special_tokens=True)
-    
-    # Perform sentiment analysis
     results = classifier(truncated_text)
     return results
 
@@ -54,48 +63,35 @@ def analyze_sentiment_bert(text):
 def analyze_sentiment(text):
     return TextBlob(text).sentiment
 
-@st.cache_data
+@st.cache_resource(ttl=300)  # 👈 Cache data for 300 seconds
+def get_openai_client(api_key):
+    # Cache the OpenAI client to avoid reinitialization
+    return OpenAI(api_key=api_key)
+
+# Caching the API request
+@st.cache_data(show_spinner="Fetching News...")
 def fetch_gnews(query, api_key):
     base_url = "https://gnews.io/api/v4/search"
     full_url = f"{base_url}?q={quote(query)}&lang=en&country=us&max=10&token={api_key}"
-    try:
-        response = requests.get(full_url)
-        articles = response.json().get('articles', [])
-        return [(article['title'], article['description'], article['url']) for article in articles]
-    except Exception as e:
-        st.error(f"Failed to fetch data from GNews: {str(e)}")
-        return []
+    response = requests.get(full_url)
+    articles = response.json().get('articles', [])
+    return [(article['title'], article['description'], article['url']) for article in articles]
 
 def create_openai_thread(content, api_key):
-    try:
-        client = OpenAI(api_key=api_key)
-        thread = client.beta.threads.create(messages=[{"role": "user", "content": content}])
-        run = client.beta.threads.runs.create(thread_id=thread.id, assistant_id=ASSISTANT_ID)
-        while run.status != "completed":
-            run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
-            time.sleep(1)
-        message_response = client.beta.threads.messages.list(thread_id=thread.id)
-        messages = message_response.data
-        return messages[0].content[0].text.value
-    except Exception as e:
-        return f"Error in OpenAI Assistant API: {str(e)}"
+    client = get_openai_client(api_key)
+    thread = client.beta.threads.create(messages=[{"role": "user", "content": content}])
+    run = client.beta.threads.runs.create(thread_id=thread.id, assistant_id=ASSISTANT_ID)
+    while run.status != "completed":
+        run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+        time.sleep(1)
+    message_response = client.beta.threads.messages.list(thread_id=thread.id)
+    messages = message_response.data
+    return messages[0].content[0].text.value
 
-    
-# Main area for displaying results or additional features
-st.set_page_config(layout='wide')
-
-# Ensure API key is available
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    OPENAI_API_KEY = st.sidebar.text_input("Please enter your OpenAI API key:")
-
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY") or st.sidebar.text_input("Please enter your OpenAI API key:")
 if not OPENAI_API_KEY:
     st.error("OpenAI API key is required to run this app.")
     st.stop()
-else:
-    client = OpenAI(api_key=OPENAI_API_KEY)  # Correctly pass the API key here
-
-st.sidebar.text("Disclaimer: Demo purposes only.")
 
 st.title("News Summarizer & Sentiment Analysis")
 st.write("Results will appear here based on the input method selected in the sidebar.")
@@ -215,3 +211,5 @@ elif option == "Yahoo Finance News":
         response = assistant_response.replace("<br>-", "-")
         st.write("Assistant Response:")
         st.markdown(response, unsafe_allow_html=True)
+
+st.sidebar.markdown("Disclaimer: The information provided in this app is for demonstration purposes only and should not be considered as financial, investment, or professional advice. The app's functionality and results are based on publicly available data and models, which may not always be accurate or up-to-date. Users are advised to conduct their own research and consult with a qualified professional before making any financial decisions. Use this app at your own risk.")
