@@ -1,3 +1,12 @@
+"""
+News Summarizer & Sentiment Analysis App
+Copyright (c) 2024 Fabio Carvalho @hipnologo
+
+This program is licensed under the Apache 2.0 License.
+You should have received a copy of the Apache 2.0 License along with this program.
+If not, see <https://opensource.org/license/apache-2-0>.
+"""
+
 import streamlit as st
 import requests
 import time
@@ -10,7 +19,6 @@ from textblob import TextBlob
 from transformers import pipeline
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
-
 
 # Set your Assistant ID and instantiate the OpenAI client.
 ASSISTANT_ID = "asst_Of2rJSAhLl8qNRc2m9Y9VuMj"
@@ -58,8 +66,9 @@ def fetch_gnews(query, api_key):
         st.error(f"Failed to fetch data from GNews: {str(e)}")
         return []
 
-def create_openai_thread(content):
+def create_openai_thread(content, api_key):
     try:
+        client = OpenAI(api_key=api_key)
         thread = client.beta.threads.create(messages=[{"role": "user", "content": content}])
         run = client.beta.threads.runs.create(thread_id=thread.id, assistant_id=ASSISTANT_ID)
         while run.status != "completed":
@@ -75,10 +84,16 @@ def create_openai_thread(content):
 # Main area for displaying results or additional features
 st.set_page_config(layout='wide')
 
+# Ensure API key is available
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    OPENAI_API_KEY = st.sidebar.text_input("Please enter your OpenAI API key: ")
-client = OpenAI()
+    OPENAI_API_KEY = st.sidebar.text_input("Please enter your OpenAI API key:")
+
+if not OPENAI_API_KEY:
+    st.error("OpenAI API key is required to run this app.")
+    st.stop()
+else:
+    client = OpenAI(api_key=OPENAI_API_KEY)  # Correctly pass the API key here
 
 st.sidebar.text("Disclaimer: Demo purposes only.")
 
@@ -108,7 +123,7 @@ if option == "Upload a File":
 
         st.write("Sentiment:", sentiment)
         
-        assistant_response = create_openai_thread(content)
+        assistant_response = create_openai_thread(content, OPENAI_API_KEY)
         response = assistant_response.replace("<br>-", "-")
         st.write("Assistant Response:")
         st.markdown(response, unsafe_allow_html=True)
@@ -126,7 +141,7 @@ elif option == "Paste Text":
         st.write("Sentiment:", sentiment)
 
         content = text
-        assistant_response = create_openai_thread(content)
+        assistant_response = create_openai_thread(content, OPENAI_API_KEY)
         response = assistant_response.replace("<br>-", "-")
         st.write("Assistant Response:")
         st.markdown(response, unsafe_allow_html=True)
@@ -148,7 +163,7 @@ elif option == "Fetch from URL":
 
             st.write("Sentiment:", sentiment)
             
-            assistant_response = create_openai_thread(url_content)
+            assistant_response = create_openai_thread(url_content, OPENAI_API_KEY)
             response = assistant_response.replace("<br>-", "-")            
             st.write("Assistant Response:")
             st.markdown(response, unsafe_allow_html=True)
@@ -176,7 +191,7 @@ elif option == "GNews API":
 
         st.write("Sentiment:", sentiment)
         # OpenAI Assistant
-        assistant_response = create_openai_thread(content)
+        assistant_response = create_openai_thread(content, OPENAI_API_KEY)
         response = assistant_response.replace("<br>-", "-")
         st.write("Assistant Response:")
         st.markdown(response, unsafe_allow_html=True)
@@ -196,7 +211,7 @@ elif option == "Yahoo Finance News":
         st.write("Sentiment:", sentiment)
         
         # OpenAI Assistant
-        assistant_response = create_openai_thread(content)
+        assistant_response = create_openai_thread(content, OPENAI_API_KEY)
         response = assistant_response.replace("<br>-", "-")
         st.write("Assistant Response:")
         st.markdown(response, unsafe_allow_html=True)
