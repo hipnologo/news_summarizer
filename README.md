@@ -67,3 +67,5 @@ If you have any questions or need help using News Summarizer, please post a ques
 
 ## License
 This project is licensed under the Apache 2.0 License - see the [LICENSE](https://opensource.org/licenses/Apache-2.0) file for details.
+
+<a href="https://www.buymeacoffee.com/hipnologod" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
